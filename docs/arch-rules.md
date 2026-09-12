@@ -6,9 +6,9 @@
 
 | Слой | Выбор | Версия |
 |---|---|---|
-| Runtime | Node.js LTS | 20+ |
+| Runtime | Node.js LTS | 22+ (см. D9 — Astro 7 требует ≥22.12) |
 | Пакетный менеджер | pnpm (npm тоже ок) | latest |
-| Фреймворк | **Astro**, вывод `output: 'static'` (артефакт в `dist/`) | 5+ (`npm create astro@latest`) |
+| Фреймворк | **Astro**, вывод `output: 'static'` (артефакт в `dist/`) | 7+ (`npm create astro@latest`) |
 | Стили | **Tailwind CSS** + слой пастельных дизайн-токенов | 4+ |
 | Rich-контент | **MDX** (`@astrojs/mdx`) | latest |
 | Схема контента | Astro Content Collections + **zod** | встроено |
@@ -16,9 +16,9 @@
 | i18n | встроенный i18n Astro, локали `en` + `ru`, обе с префиксом (`/en/`, `/ru/`) | встроено |
 | Картинки | `astro:assets` (`<Image>`) | встроено |
 | Иконки | `astro-icon` или инлайн-SVG | latest |
-| Шрифты | Fontsource, self-hosted (напр. Inter + акцентный serif) | latest |
+| Шрифты | Fontsource, self-hosted (Inter + акцентный serif Lora) | latest |
 | Исходник | GitHub (репозиторий-источник, туда же коммитит Keystatic) | — |
-| Хостинг прода | **Amvera** (git push / привязка GitHub, статика из `dist/`) | — |
+| Хостинг прода | **Amvera**, toolchain `Node.JS Server` + `sirv` раздаёт `dist/` (см. D9; не `browser`-toolchain — его nginx не резолвит директории) | — |
 | Домен | нейтральный TLD `.com`/`.dev`, регистратор reg.ru (рубли) | — |
 | CDN | **нет** (никакого Cloudflare/иностранного CDN в проде) | — |
 
@@ -31,15 +31,15 @@ portfolio/
 ├─ astro.config.mjs          # интеграции: mdx, keystatic, sitemap; конфиг i18n
 ├─ keystatic.config.ts       # коллекция projects + singleton about; парные en/ru поля
 ├─ content.config.ts         # zod-схема коллекций (валидация фронтматтера)
-├─ amvera.yml                # конфиг сборки/деплоя Amvera (build → dist/, статика)
+├─ amvera.yaml               # конфиг сборки/деплоя Amvera (Node.JS Server + sirv, см. D9)
 ├─ tailwind + globals.css     # дизайн-токены (пастель, свет/тёмная)
 ├─ tsconfig.json / package.json
 ├─ public/                   # favicon, resume.pdf, статические ассеты
 ├─ src/
 │  ├─ content/projects/      # markdown/mdx проектов (пишет Keystatic)
 │  ├─ assets/                # оптимизируемые картинки (обложки, галереи)
-│  ├─ components/            # Hero, ProjectCard, ProjectGrid, LangSwitcher,
-│  │                         #   ThemeToggle, Gallery, VideoEmbed, TagFilter
+│  ├─ components/            # Header, Footer, ProjectCard, ProjectGrid,
+│  │                         #   LangSwitcher, ThemeToggle, Gallery, VideoEmbed, TagFilter
 │  ├─ layouts/              # BaseLayout, ProjectLayout
 │  ├─ pages/
 │  │  ├─ index.astro         # редирект на локаль по умолчанию
@@ -56,14 +56,14 @@ portfolio/
 ## Деплой-пайплайн (прод)
 
 - Исходник живёт в GitHub. Keystatic в GitHub-режиме коммитит контент туда же.
-- Amvera привязан к GitHub-репозиторию (или получает `git push amvera master`) → собирает статику (`npm install && npm run build`) и раздаёт `dist/`.
+- Amvera привязан к GitHub-репозиторию (или получает `git push amvera master`) → собирает статику (`npm install && npm run build`) и раздаёт `dist/` через `sirv` (Node.JS Server toolchain, см. D9).
 - Итог: правка в CMS → коммит в GitHub → пересборка на Amvera → обновлённый сайт. Зрители всегда ходят только на Amvera (RU-доступ без VPN).
 
 ## Запрещено в v1 (с триггером пересмотра)
 
 - **Западные хостинги и CDN в проде** (Vercel, Netlify, Cloudflare, GitHub Pages как основной прод) — из РФ заблокированы/нестабильны. Пересмотр, только если российская аудитория перестанет быть целевой.
 - **Cloudflare в любом виде** (в т.ч. как DNS-прокси) — рвёт TLS-хендшейк из РФ. Не пересматриваем, пока целимся в РФ.
-- **Кастомный сервер/бэкенд** — пересмотр, если контактной форме понадобится логика сложнее Formspree.
+- **Кастомный сервер/бэкенд с бизнес-логикой** — пересмотр, если контактной форме понадобится логика сложнее Formspree. Исключение зафиксировано в D9: `sirv` на Amvera — это только раздача готовых статических файлов (без обработки пользовательского ввода, без состояния), а не бизнес-логика; сайт остаётся полностью статическим.
 - **База данных** — пересмотр, если проектов станет > ~100 (не станет).
 - **React/Vue/Svelte** — только Astro-островки. Интерактив (переключатели языка/темы, фильтр) — минимальными островками. Пересмотр, если встраивается сложное интерактивное демо.
 - **Самостоятельный хостинг видео** — не пересматриваем: только YouTube/Vimeo embed.
@@ -99,3 +99,4 @@ portfolio/
 - **D6. GitHub — источник, Amvera — прод.** Keystatic коммитит в GitHub, Amvera собирает оттуда; CMS/GitHub касается только автор, зрители ходят на Amvera. *Альт:* хостить исходник прямо в git Amvera (теряем GitHub как витрину кода в портфолио).
 - **D7. Контент в формате проблема→решение→результат.** Использует BA-бэкграунд, отличает от типового dev-портфолио.
 - **D8. Стек почти за $0.** CMS и исходник бесплатны, платный только дешёвый рублёвый хостинг + домен — под личный сайт нормально.
+- **D9. Amvera: toolchain `Node.JS Server` + `sirv`, а не `browser` (nginx-статика).** При первом деплое на toolchain `browser` (nginx) обнаружилось: раздача matchит только точный путь к файлу, без резолва `директория → index.html`; любой несовпавший путь (включая `/en/`, `/ru/`) фолбэчил на корневой `index.html`, из-за чего клиентский редирект `/` → `/en/` зацикливался бесконечно. Перешли на `Node.JS Server` toolchain, раздающий `dist/` через `sirv` (`amvera.yaml`: `run.command: npm run start`, `containerPort: 3000`) — `sirv` корректно резолвит индексы директорий и отдаёт настоящий 404 на несуществующие пути. Сайт остаётся полностью статическим (см. правило «Кастомный сервер/бэкенд» выше) — `sirv` не исполняет пользовательский ввод и не хранит состояние, просто раздаёт файлы из `dist/`. *Альт:* сменить схему URL на плоские файлы без слэша (`/en.html`, `/ru.html`) и остаться на nginx-статике — отклонено, т.к. ломает договорённость D3 про симметричные `/en/`/`/ru/` без явного расширения в урле.

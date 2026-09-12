@@ -1,19 +1,25 @@
-# Amvera deploy config — static build via Node "browser" toolchain.
-# Docs: https://docs.amvera.ru/applications/environments/nodejs-browser.html
+# Amvera deploy config.
 #
-# Runtime for this toolchain is a static nginx image (no Node at runtime),
-# so no `run.command` / `containerPort` is needed — Amvera just serves the
-# files listed under build.artifacts.
+# D9 (see docs/arch-rules.md): switched from the "browser" toolchain
+# (static nginx) to "Node.JS Server" running `sirv`. The browser
+# toolchain's nginx only serves an EXACT file-path match and falls back
+# to the root index.html for everything else (no directory-index
+# resolution) — that turned our /en/ and /ru/ routes into an infinite
+# redirect loop through the root's meta-refresh stub. `sirv` resolves
+# directory index.html files correctly and 404s on truly missing paths.
+# Docs: https://docs.amvera.ru/applications/environments/nodejs-server.html
 meta:
   environment: node
   toolchain:
-    name: browser
-    # Astro 7 requires Node >=22.12 — bumped from 20 after the first
-    # Amvera build failed with "Node.js v20.20.2 is not supported by Astro!"
+    name: npm
     version: 22
 
 build:
-  # Default build command for this toolchain is already
-  # "npm install && npm run build" — no need to override it.
-  artifacts:
-    "dist/*": /
+  # Default build command for npm toolchain doesn't build automatically —
+  # spelled out here to also run the Astro build after npm install.
+  additionalCommands: npm run build
+
+run:
+  # package.json "start": "sirv dist --host 0.0.0.0 --port 3000 --etag"
+  command: npm run start
+  containerPort: 3000

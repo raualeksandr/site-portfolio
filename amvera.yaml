@@ -8,7 +8,9 @@ meta:
   environment: node
   toolchain:
     name: browser
-    version: 20
+    # Astro 7 requires Node >=22.12 — bumped from 20 after the first
+    # Amvera build failed with "Node.js v20.20.2 is not supported by Astro!"
+    version: 22
 
 build:
   # Default build command for this toolchain is already

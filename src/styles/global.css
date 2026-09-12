@@ -1,1 +1,79 @@
 @import "tailwindcss";
+
+/* Self-hosted fonts (no third-party CDN) — arch-rules.md: "Шрифты: Fontsource, self-hosted" */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/lora/500.css";
+@import "@fontsource/lora/600.css";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Lora", ui-serif, Georgia, serif;
+
+  /* Pastel brand scale (lavender) */
+  --color-brand-50: #f6f2fc;
+  --color-brand-100: #ece3f9;
+  --color-brand-200: #d9c9f3;
+  --color-brand-300: #c2a9ea;
+  --color-brand-400: #a684df;
+  --color-brand-500: #8b63d2;
+  --color-brand-600: #714dbd;
+  --color-brand-700: #5b3d99;
+  --color-brand-800: #47317a;
+  --color-brand-900: #372760;
+
+  /* Pastel accent scale (peach) — for highlights, CTAs */
+  --color-accent-50: #fef6f0;
+  --color-accent-100: #fdebdf;
+  --color-accent-200: #fad3ba;
+  --color-accent-300: #f6b389;
+  --color-accent-400: #f0925a;
+  --color-accent-500: #e57539;
+  --color-accent-600: #c85c28;
+}
+
+/* Theme-aware surface tokens: light by default, dark via [data-theme="dark"]
+   or prefers-color-scheme when no explicit choice has been made yet.
+   The toggle button in the header is a placeholder for now — wired up
+   with real logic in Day 8 (P1: тёмная/светлая тема). */
+:root {
+  color-scheme: light;
+  --bg: #fbf9fd;
+  --bg-muted: #f2eef8;
+  --fg: #211c2b;
+  --fg-muted: #5b5468;
+  --border: var(--color-brand-200);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #1b1723;
+    --bg-muted: #241f2e;
+    --fg: #f1edf7;
+    --fg-muted: #b7aec9;
+    --border: #3a3348;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1b1723;
+  --bg-muted: #241f2e;
+  --fg: #f1edf7;
+  --fg-muted: #b7aec9;
+  --border: #3a3348;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}

@@ -1,0 +1,63 @@
+---
+interface Props {
+  lang: "en" | "ru";
+}
+
+const { lang } = Astro.props;
+
+const labels = {
+  en: { home: "Alex", tagline: "AI Consultant / Solutions Engineer" },
+  ru: { home: "Алекс", tagline: "AI-консультант / Solutions Engineer" },
+};
+
+const t = labels[lang];
+const otherLangHref = lang === "en" ? "/ru/" : "/en/";
+const otherLangLabel = lang === "en" ? "RU" : "EN";
+---
+
+<header
+  class="sticky top-0 z-10 border-b"
+  style="background-color: var(--bg); border-color: var(--border);"
+>
+  <div class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <a href={lang === "en" ? "/en/" : "/ru/"} class="flex flex-col leading-tight">
+      <span class="font-serif text-lg font-semibold" style="color: var(--fg);">{t.home}</span>
+      <span class="hidden text-xs sm:block" style="color: var(--fg-muted);">{t.tagline}</span>
+    </a>
+
+    <nav class="flex items-center gap-2">
+      <!--
+        Placeholder language switcher — real i18n routing/state lands in
+        Day 3. For now it's a plain link to the same page in the other
+        locale's index.
+      -->
+      <a
+        href={otherLangHref}
+        class="rounded-full border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-[var(--bg-muted)]"
+        style="border-color: var(--border); color: var(--fg);"
+        aria-label={`Switch language to ${otherLangLabel}`}
+      >
+        {otherLangLabel}
+      </a>
+
+      <!--
+        Placeholder theme toggle — no click handler yet, real light/dark
+        switching is Day 8 (P1). Kept as a disabled-looking button so the
+        layout for it exists now.
+      -->
+      <button
+        type="button"
+        class="rounded-full border p-2 text-sm opacity-60"
+        style="border-color: var(--border); color: var(--fg);"
+        aria-label="Toggle theme (coming soon)"
+        aria-disabled="true"
+        disabled
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+      </button>
+    </nav>
+  </div>
+</header>

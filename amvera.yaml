@@ -1,0 +1,17 @@
+# Amvera deploy config — static build via Node "browser" toolchain.
+# Docs: https://docs.amvera.ru/applications/environments/nodejs-browser.html
+#
+# Runtime for this toolchain is a static nginx image (no Node at runtime),
+# so no `run.command` / `containerPort` is needed — Amvera just serves the
+# files listed under build.artifacts.
+meta:
+  environment: node
+  toolchain:
+    name: browser
+    version: 20
+
+build:
+  # Default build command for this toolchain is already
+  # "npm install && npm run build" — no need to override it.
+  artifacts:
+    "dist/*": /

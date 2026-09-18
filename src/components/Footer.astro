@@ -1,17 +1,13 @@
 ---
+import { useTranslations, type Locale } from "../i18n";
+
 interface Props {
-  lang: "en" | "ru";
+  lang: Locale;
 }
 
 const { lang } = Astro.props;
 const year = new Date().getFullYear();
-
-const labels = {
-  en: { rights: "Built with Astro + Tailwind.", resume: "Resume" },
-  ru: { rights: "Собрано на Astro + Tailwind.", resume: "Резюме" },
-};
-
-const t = labels[lang];
+const t = useTranslations(lang);
 
 // Placeholder social links — real values come in from the CMS (Day 6/7).
 const socials = [
@@ -26,14 +22,14 @@ const socials = [
     class="mx-auto flex max-w-3xl flex-col items-center gap-3 px-4 py-6 text-sm sm:flex-row sm:justify-between sm:px-6"
     style="color: var(--fg-muted);"
   >
-    <p>&copy; {year} · {t.rights}</p>
+    <p>&copy; {year} · {t("footer.rights")}</p>
     <nav class="flex flex-wrap items-center justify-center gap-4">
       {socials.map((s) => (
         <a href={s.href} target="_blank" rel="noopener noreferrer" class="hover:underline">
           {s.label}
         </a>
       ))}
-      <a href="/resume.pdf" class="hover:underline">{t.resume}</a>
+      <a href="/resume.pdf" class="hover:underline">{t("footer.resume")}</a>
     </nav>
   </div>
 </footer>

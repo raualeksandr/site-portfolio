@@ -1,18 +1,16 @@
 ---
+import { getLocalizedPath, useTranslations, type Locale } from "../i18n";
+
 interface Props {
-  lang: "en" | "ru";
+  lang: Locale;
 }
 
 const { lang } = Astro.props;
+const t = useTranslations(lang);
 
-const labels = {
-  en: { home: "Alex", tagline: "Business Analyst / Project Manager" },
-  ru: { home: "Александр", tagline: "Бизнес-аналитик / Проектный менеджер" },
-};
-
-const t = labels[lang];
-const otherLangHref = lang === "en" ? "/ru/" : "/en/";
-const otherLangLabel = lang === "en" ? "RU" : "EN";
+const otherLang: Locale = lang === "en" ? "ru" : "en";
+const otherLangHref = getLocalizedPath(Astro.url, otherLang);
+const otherLangLabel = otherLang.toUpperCase();
 ---
 
 <header
@@ -20,22 +18,17 @@ const otherLangLabel = lang === "en" ? "RU" : "EN";
   style="background-color: var(--bg); border-color: var(--border);"
 >
   <div class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-    <a href={lang === "en" ? "/en/" : "/ru/"} class="flex flex-col leading-tight">
-      <span class="font-serif text-lg font-semibold" style="color: var(--fg);">{t.home}</span>
-      <span class="hidden text-xs sm:block" style="color: var(--fg-muted);">{t.tagline}</span>
+    <a href={`/${lang}/`} class="flex flex-col leading-tight">
+      <span class="font-serif text-lg font-semibold" style="color: var(--fg);">{t("header.name")}</span>
+      <span class="hidden text-xs sm:block" style="color: var(--fg-muted);">{t("header.tagline")}</span>
     </a>
 
     <nav class="flex items-center gap-2">
-      <!--
-        Placeholder language switcher — real i18n routing/state lands in
-        Day 3. For now it's a plain link to the same page in the other
-        locale's index.
-      -->
       <a
         href={otherLangHref}
         class="rounded-full border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-[var(--bg-muted)]"
         style="border-color: var(--border); color: var(--fg);"
-        aria-label={`Switch language to ${otherLangLabel}`}
+        aria-label={t("header.switchLangAria", { lang: otherLangLabel })}
       >
         {otherLangLabel}
       </a>
@@ -49,7 +42,7 @@ const otherLangLabel = lang === "en" ? "RU" : "EN";
         type="button"
         class="rounded-full border p-2 text-sm opacity-60"
         style="border-color: var(--border); color: var(--fg);"
-        aria-label="Toggle theme (coming soon)"
+        aria-label={t("header.themeToggleAria")}
         aria-disabled="true"
         disabled
       >

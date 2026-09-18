@@ -1,0 +1,18 @@
+{
+  "header": {
+    "name": "Alex",
+    "tagline": "Business Analyst / Project Manager",
+    "switchLangAria": "Switch language to {{lang}}",
+    "themeToggleAria": "Toggle theme (coming soon)"
+  },
+  "footer": {
+    "rights": "Built with Astro + Tailwind.",
+    "resume": "Resume"
+  },
+  "home": {
+    "title": "Alex — Portfolio",
+    "badge": "Portfolio · work in progress",
+    "heading": "Hi, I'm Alex 👋",
+    "description": "BA/PM pivoting into AI consulting and solutions engineering. Projects, case studies and a bit of vibe-coding — coming to this page soon."
+  }
+}

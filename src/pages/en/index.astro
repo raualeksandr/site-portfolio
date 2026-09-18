@@ -1,16 +1,18 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { useTranslations } from "../../i18n";
+
+const t = useTranslations("en");
 ---
 
-<BaseLayout title="Alex — Portfolio" lang="en">
+<BaseLayout title={t("home.title")} lang="en">
   <main class="mx-auto flex min-h-[calc(100vh-8rem)] max-w-3xl flex-col items-center justify-center gap-4 px-4 text-center sm:px-6">
     <p class="rounded-full px-3 py-1 text-xs font-medium" style="background-color: var(--color-brand-100); color: var(--color-brand-700);">
-      Portfolio · work in progress
+      {t("home.badge")}
     </p>
-    <h1 class="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">Hi, I'm Alex 👋</h1>
+    <h1 class="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">{t("home.heading")}</h1>
     <p class="max-w-xl text-lg" style="color: var(--fg-muted);">
-      BA/PM pivoting into AI consulting and solutions engineering. Projects, case studies and a bit
-      of vibe-coding — coming to this page soon.
+      {t("home.description")}
     </p>
   </main>
 </BaseLayout>

@@ -1,0 +1,55 @@
+---
+// Turns a YouTube/Vimeo watch link into a lazy, privacy-friendly embed.
+// Unsupported/unparseable URLs render nothing rather than a broken frame.
+interface Props {
+  url: string;
+  title: string;
+}
+
+const { url, title } = Astro.props;
+
+function toEmbedUrl(raw: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return null;
+  }
+
+  const host = parsed.hostname.replace(/^www\./, "");
+
+  if (host === "youtube.com" || host === "m.youtube.com") {
+    const id = parsed.searchParams.get("v");
+    return id ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+  }
+
+  if (host === "youtu.be") {
+    const id = parsed.pathname.slice(1);
+    return id ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+  }
+
+  if (host === "vimeo.com") {
+    const id = parsed.pathname.split("/").filter(Boolean).pop();
+    return id ? `https://player.vimeo.com/video/${id}` : null;
+  }
+
+  return null;
+}
+
+const embedUrl = toEmbedUrl(url);
+---
+
+{
+  embedUrl && (
+    <div class="aspect-video w-full overflow-hidden rounded-xl" style="border: 1px solid var(--border);">
+      <iframe
+        src={embedUrl}
+        title={title}
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        class="h-full w-full"
+      />
+    </div>
+  )
+}

@@ -1,0 +1,27 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  images: ImageMetadata[];
+  alt: string;
+}
+
+const { images, alt } = Astro.props;
+---
+
+{
+  images.length > 0 && (
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {images.map((img, i) => (
+        <Image
+          src={img}
+          alt={`${alt} — ${i + 1}`}
+          loading="lazy"
+          class="aspect-[4/3] w-full rounded-xl object-cover"
+          style="border: 1px solid var(--border);"
+        />
+      ))}
+    </div>
+  )
+}

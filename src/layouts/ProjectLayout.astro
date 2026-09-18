@@ -1,0 +1,118 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import BaseLayout from "./BaseLayout.astro";
+import Gallery from "../components/Gallery.astro";
+import VideoEmbed from "../components/VideoEmbed.astro";
+import { useTranslations, type Locale } from "../i18n";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  lang: Locale;
+}
+
+const { project, lang } = Astro.props;
+const {
+  title,
+  summary,
+  problem,
+  solution,
+  result,
+  role,
+  period,
+  category,
+  tech,
+  links,
+  cover,
+  gallery,
+  video,
+} = project.data;
+
+const t = useTranslations(lang);
+const siteName = lang === "en" ? "Alex" : "Александр";
+---
+
+<BaseLayout title={`${title[lang]} — ${siteName}`} lang={lang}>
+  <main class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <p class="text-xs font-medium uppercase tracking-wide" style="color: var(--fg-muted);">
+      {category} · {role[lang]} · {period[lang]}
+    </p>
+    <h1 class="mt-1 font-serif text-3xl font-semibold sm:text-4xl">{title[lang]}</h1>
+    <p class="mt-2 text-lg" style="color: var(--fg-muted);">{summary[lang]}</p>
+
+    {
+      cover && (
+        <Image
+          src={cover}
+          alt={title[lang]}
+          class="mt-6 w-full rounded-2xl"
+          style="border: 1px solid var(--border);"
+        />
+      )
+    }
+
+    {
+      tech.length > 0 && (
+        <ul class="mt-6 flex flex-wrap gap-2">
+          {tech.map((tag) => (
+            <li
+              class="rounded-full px-3 py-1 text-xs font-medium"
+              style="background-color: var(--color-brand-100); color: var(--color-brand-700);"
+            >
+              {tag}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <section class="mt-8 space-y-6">
+      <div>
+        <h2 class="font-serif text-lg font-semibold">{t("project.problem")}</h2>
+        <p style="color: var(--fg-muted);">{problem[lang]}</p>
+      </div>
+      <div>
+        <h2 class="font-serif text-lg font-semibold">{t("project.solution")}</h2>
+        <p style="color: var(--fg-muted);">{solution[lang]}</p>
+      </div>
+      <div>
+        <h2 class="font-serif text-lg font-semibold">{t("project.result")}</h2>
+        <p style="color: var(--fg-muted);">{result[lang]}</p>
+      </div>
+    </section>
+
+    {
+      links.length > 0 && (
+        <nav class="mt-8 flex flex-wrap gap-4">
+          {links.map((link) => (
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-[var(--bg-muted)]"
+              style="border-color: var(--border); color: var(--fg);"
+            >
+              {link.label} ↗
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
+    {
+      gallery.length > 0 && (
+        <div class="mt-10">
+          <Gallery images={gallery} alt={title[lang]} />
+        </div>
+      )
+    }
+
+    {
+      video && (
+        <div class="mt-10">
+          <VideoEmbed url={video} title={title[lang]} />
+        </div>
+      )
+    }
+  </main>
+</BaseLayout>

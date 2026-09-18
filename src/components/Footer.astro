@@ -1,4 +1,5 @@
 ---
+import { getEntry } from "astro:content";
 import { useTranslations, type Locale } from "../i18n";
 
 interface Props {
@@ -8,13 +9,17 @@ interface Props {
 const { lang } = Astro.props;
 const year = new Date().getFullYear();
 const t = useTranslations(lang);
+const about = await getEntry("about", "main");
 
-// Placeholder social links — real values come in from the CMS (Day 6/7).
+// Sourced from src/content/about.json — fill in real values there; a
+// browser CMS (Keystatic, Day 6) takes over editing this later.
 const socials = [
-  { label: "GitHub", href: "https://github.com/" },
-  { label: "LinkedIn", href: "https://www.linkedin.com/" },
-  { label: "Email", href: "mailto:hello@example.com" },
-];
+  about?.data.socials.github && { label: "GitHub", href: about.data.socials.github },
+  about?.data.socials.linkedin && { label: "LinkedIn", href: about.data.socials.linkedin },
+  about?.data.socials.email && { label: "Email", href: `mailto:${about.data.socials.email}` },
+].filter((s): s is { label: string; href: string } => Boolean(s));
+
+const resumeHref = about?.data.resume ?? "/resume.pdf";
 ---
 
 <footer class="border-t" style="border-color: var(--border);">
@@ -29,7 +34,7 @@ const socials = [
           {s.label}
         </a>
       ))}
-      <a href="/resume.pdf" class="hover:underline">{t("footer.resume")}</a>
+      <a href={resumeHref} class="hover:underline">{t("footer.resume")}</a>
     </nav>
   </div>
 </footer>

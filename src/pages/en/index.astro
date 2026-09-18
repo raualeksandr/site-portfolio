@@ -1,18 +1,28 @@
 ---
+import { getCollection, getEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectGrid from "../../components/ProjectGrid.astro";
 import { useTranslations } from "../../i18n";
 
 const t = useTranslations("en");
+const about = await getEntry("about", "main");
+const projects = await getCollection("projects", ({ data }) => !data.draft);
 ---
 
 <BaseLayout title={t("home.title")} lang="en">
-  <main class="mx-auto flex min-h-[calc(100vh-8rem)] max-w-3xl flex-col items-center justify-center gap-4 px-4 text-center sm:px-6">
+  <main class="mx-auto flex max-w-3xl flex-col items-center gap-4 px-4 pb-8 pt-16 text-center sm:px-6">
     <p class="rounded-full px-3 py-1 text-xs font-medium" style="background-color: var(--color-brand-100); color: var(--color-brand-700);">
       {t("home.badge")}
     </p>
-    <h1 class="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">{t("home.heading")}</h1>
+    <h1 class="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">
+      {t("home.heading", { name: about?.data.name.en ?? "Alex" })}
+    </h1>
     <p class="max-w-xl text-lg" style="color: var(--fg-muted);">
-      {t("home.description")}
+      {about?.data.bio.en}
     </p>
   </main>
+
+  <section class="mx-auto max-w-3xl px-4 pb-16 sm:px-6">
+    <ProjectGrid projects={projects} lang="en" />
+  </section>
 </BaseLayout>

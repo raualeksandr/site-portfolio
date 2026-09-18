@@ -12,7 +12,11 @@
   "home": {
     "title": "Alex — Portfolio",
     "badge": "Portfolio · work in progress",
-    "heading": "Hi, I'm Alex 👋",
-    "description": "BA/PM pivoting into AI consulting and solutions engineering. Projects, case studies and a bit of vibe-coding — coming to this page soon."
+    "heading": "Hi, I'm {{name}} 👋"
+  },
+  "project": {
+    "problem": "Problem",
+    "solution": "Solution",
+    "result": "Result"
   }
 }

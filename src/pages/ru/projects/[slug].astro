@@ -1,0 +1,39 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { useTranslations } from "../../../i18n";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", ({ data }) => !data.draft);
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { title, summary, problem, solution, result } = project.data;
+const t = useTranslations("ru");
+---
+
+<BaseLayout title={`${title.ru} — Александр`} lang="ru">
+  <main class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <h1 class="font-serif text-3xl font-semibold sm:text-4xl">{title.ru}</h1>
+    <p class="mt-2 text-lg" style="color: var(--fg-muted);">{summary.ru}</p>
+
+    <section class="mt-8 space-y-6">
+      <div>
+        <h2 class="font-serif text-lg font-semibold">{t("project.problem")}</h2>
+        <p style="color: var(--fg-muted);">{problem.ru}</p>
+      </div>
+      <div>
+        <h2 class="font-serif text-lg font-semibold">{t("project.solution")}</h2>
+        <p style="color: var(--fg-muted);">{solution.ru}</p>
+      </div>
+      <div>
+        <h2 class="font-serif text-lg font-semibold">{t("project.result")}</h2>
+        <p style="color: var(--fg-muted);">{result.ru}</p>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

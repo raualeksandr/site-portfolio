@@ -1,0 +1,19 @@
+{
+  "main": {
+    "name": { "en": "Alex", "ru": "Александр" },
+    "headline": {
+      "en": "Business Analyst / Project Manager",
+      "ru": "Бизнес-аналитик / Проектный менеджер"
+    },
+    "bio": {
+      "en": "BA/PM pivoting into AI consulting and solutions engineering. 5+ years across telecom, government consulting and a startup. Projects, case studies and a bit of vibe-coding — coming to this page soon.",
+      "ru": "Бизнес-аналитик / проектный менеджер, 5+ лет опыта в телекоме, гос. консалтинге и стартапе — сейчас параллельно смотрю в сторону AI-консалтинга и solutions engineering. Проекты, кейсы и немного вайб-кодинга — скоро появятся на этой странице."
+    },
+    "socials": {
+      "github": "https://github.com/raualeksandr",
+      "linkedin": "https://www.linkedin.com/",
+      "email": "hello@example.com"
+    },
+    "resume": "/resume.pdf"
+  }
+}

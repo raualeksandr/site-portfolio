@@ -1,0 +1,10 @@
+---
+// Mounted manually (not via the @keystatic/astro integration) and under
+// /en/ specifically — see D10 in docs/arch-rules.md for why an
+// unprefixed /keystatic 404s under our i18n config.
+export const prerender = false;
+
+import { Keystatic } from './_keystatic-page';
+---
+
+<Keystatic client:only="react" />

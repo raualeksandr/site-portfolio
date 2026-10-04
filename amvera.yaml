@@ -1,13 +1,21 @@
 # Amvera deploy config.
 #
 # D9 (see docs/arch-rules.md): switched from the "browser" toolchain
-# (static nginx) to "Node.JS Server" running `sirv`. The browser
-# toolchain's nginx only serves an EXACT file-path match and falls back
-# to the root index.html for everything else (no directory-index
-# resolution) — that turned our /en/ and /ru/ routes into an infinite
-# redirect loop through the root's meta-refresh stub. `sirv` resolves
-# directory index.html files correctly and 404s on truly missing paths.
+# (static nginx) to "Node.JS Server". The browser toolchain's nginx only
+# serves an EXACT file-path match and falls back to the root index.html
+# for everything else (no directory-index resolution) — that turned our
+# /en/ and /ru/ routes into an infinite redirect loop through the root's
+# meta-refresh stub.
 # Docs: https://docs.amvera.ru/applications/environments/nodejs-server.html
+#
+# D10: the Keystatic admin's GitHub-mode OAuth token exchange has to run
+# server-side, so the site now ships the @astrojs/node adapter in
+# "standalone" mode instead of pure static output served by `sirv`.
+# That one Node process serves every static page itself AND powers
+# /keystatic + /api/keystatic on demand. containerPort 8080 matches the
+# adapter's default listen port (no PORT env var set — see "Переменные и
+# секреты" in the Amvera dashboard for KEYSTATIC_GITHUB_CLIENT_ID/SECRET
+# and KEYSTATIC_SECRET, which must never live in this repo).
 meta:
   environment: node
   toolchain:
@@ -20,6 +28,6 @@ build:
   additionalCommands: npm run build
 
 run:
-  # package.json "start": "sirv dist --host 0.0.0.0 --port 3000 --etag"
+  # package.json "start": "node ./dist/server/entry.mjs"
   command: npm run start
-  containerPort: 3000
+  containerPort: 8080

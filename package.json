@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "astro dev",
-    "start": "sirv dist --host 0.0.0.0 --port 3000 --etag",
+    "start": "cross-env PORT=8080 node ./dist/server/entry.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -17,11 +17,19 @@
   "type": "module",
   "dependencies": {
     "@astrojs/mdx": "^8.0.1",
+    "@astrojs/node": "^11.1.6",
+    "@astrojs/react": "^7.0.0",
     "@fontsource/inter": "^5.3.0",
     "@fontsource/lora": "^5.3.0",
+    "@keystatic/astro": "^6.0.0",
+    "@keystatic/core": "^0.6.9",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.2",
-    "sirv-cli": "^3.0.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

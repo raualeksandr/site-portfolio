@@ -1,18 +1,32 @@
 import { config, fields, collection, singleton } from '@keystatic/core';
 
-/** A field group that mirrors content.config.ts's `localized` zod shape. */
-const localized = (label: string, opts: { multiline?: boolean; required?: boolean } = {}) =>
-  fields.object({
-    en: fields.text({
-      label: `${label} (EN)`,
-      multiline: opts.multiline,
-      validation: { isRequired: opts.required ?? true },
-    }),
-    ru: fields.text({
-      label: `${label} (RU)`,
-      multiline: opts.multiline,
-      validation: { isRequired: opts.required ?? true },
-    }),
+/**
+ * EN and RU side by side in one row. EN is the source of truth; RU may be
+ * left empty and the site falls back to EN (see content.config.ts).
+ */
+const localized = (
+  label: string,
+  opts: { multiline?: boolean; required?: boolean; description?: string } = {},
+) =>
+  fields.object(
+    {
+      en: fields.text({
+        label: 'EN',
+        multiline: opts.multiline,
+        validation: { isRequired: opts.required ?? true },
+      }),
+      ru: fields.text({ label: 'RU', multiline: opts.multiline }),
+    },
+    { label, description: opts.description, layout: [6, 6] },
+  );
+
+const projectImage = (label: string) =>
+  // Relative to this entry's own file, matching the "./images/..." paths
+  // content.config.ts's image() validator expects.
+  fields.image({
+    label,
+    directory: 'src/content/projects/images',
+    publicPath: './images/',
   });
 
 export default config({
@@ -24,63 +38,105 @@ export default config({
     ? { kind: 'local' }
     : { kind: 'github', repo: 'raualeksandr/site-portfolio' },
 
+  ui: {
+    brand: { name: 'aleksandrrau.com' },
+    navigation: { Content: ['projects'], Profile: ['about'] },
+  },
+
   collections: {
     projects: collection({
       label: 'Projects',
       path: 'src/content/projects/*',
+      // D11: the body isn't rendered anywhere, so entries stay .mdx files
+      // (the glob loader expects them) without an editor for it.
       format: { contentField: 'content' },
-      slugField: 'slug',
+      slugField: 'title',
+      columns: ['category'],
       schema: {
-        slug: fields.slug({ name: { label: 'Title (used for the URL/filename)' } }),
-        title: localized('Title'),
-        summary: localized('Summary', { multiline: true }),
-        problem: localized('Problem', { multiline: true }),
-        solution: localized('Solution', { multiline: true }),
-        result: localized('Result', { multiline: true }),
+        title: fields.slug({
+          name: {
+            label: 'Title',
+            description: 'In English. The page URL is generated from it.',
+          },
+          slug: { label: 'URL', description: 'Generated from the title' },
+        }),
+        titleRu: fields.text({
+          label: 'Title (RU)',
+          description: 'Leave empty to use the English title',
+        }),
         category: fields.select({
           label: 'Category',
           options: [
-            { label: 'BA', value: 'ba' },
+            { label: 'BA / PM work', value: 'ba' },
             { label: 'Vibe-coded', value: 'vibecoded' },
           ],
-          defaultValue: 'ba',
+          defaultValue: 'vibecoded',
         }),
-        role: localized('Role'),
-        period: localized('Period'),
-        tech: fields.array(fields.text({ label: 'Tag' }), {
+        summary: localized('Short description', {
+          multiline: true,
+          description: 'One or two sentences for the project card',
+        }),
+        cover: projectImage('Cover image'),
+        tech: fields.text({
           label: 'Tech stack',
-          itemLabel: (props) => props.value || 'Tag',
+          description: 'Comma-separated: Astro, Python, Claude API',
         }),
         links: fields.array(
-          fields.object({
-            label: fields.text({ label: 'Label', validation: { isRequired: true } }),
-            url: fields.url({ label: 'URL', validation: { isRequired: true } }),
-          }),
+          fields.object(
+            {
+              label: fields.text({ label: 'Label', validation: { isRequired: true } }),
+              url: fields.url({ label: 'URL', validation: { isRequired: true } }),
+            },
+            { layout: [4, 8] },
+          ),
           {
             label: 'Links',
+            description: 'GitHub, live demo, article…',
             itemLabel: (props) => props.fields.label.value || 'Link',
           },
         ),
-        // Relative to this entry's own file, matching the "./images/..."
-        // paths content.config.ts's image() validator already expects.
-        cover: fields.image({
-          label: 'Cover image',
-          directory: 'src/content/projects/images',
-          publicPath: './images/',
+        gallery: fields.array(projectImage('Image'), {
+          label: 'Screenshots',
+          itemLabel: (props) => props.value?.filename || 'Image',
         }),
-        gallery: fields.array(
-          fields.image({
-            label: 'Image',
-            directory: 'src/content/projects/images',
-            publicPath: './images/',
+        video: fields.url({
+          label: 'Video',
+          description: 'YouTube or Vimeo link',
+          validation: { isRequired: false },
+        }),
+
+        // D11: hidden behind a checkbox — most projects only need the
+        // fields above.
+        details: fields.conditional(
+          fields.checkbox({
+            label: 'Add case-study details',
+            description: 'Role, period, and problem → solution → result',
+            defaultValue: false,
           }),
-          { label: 'Gallery', itemLabel: (props) => props.value.filename || 'Image' },
+          {
+            true: fields.object({
+              role: localized('Role', { required: false }),
+              period: localized('Period', { required: false }),
+              problem: localized('Problem', { multiline: true, required: false }),
+              solution: localized('Solution', { multiline: true, required: false }),
+              result: localized('Result', { multiline: true, required: false }),
+            }),
+            false: fields.empty(),
+          },
         ),
-        video: fields.url({ label: 'Video URL (optional)', validation: { isRequired: false } }),
+
         featured: fields.checkbox({ label: 'Featured', defaultValue: false }),
-        order: fields.integer({ label: 'Order', defaultValue: 0 }),
-        draft: fields.checkbox({ label: 'Draft', defaultValue: false }),
-        content: fields.mdx({ label: 'Body (optional)' }),
+        draft: fields.checkbox({
+          label: 'Draft',
+          description: 'Hidden from the site until unchecked',
+          defaultValue: false,
+        }),
+        order: fields.integer({
+          label: 'Order',
+          description: 'Lower numbers come first',
+          defaultValue: 0,
+        }),
+        content: fields.emptyContent({ extension: 'mdx' }),
       },
     }),
   },

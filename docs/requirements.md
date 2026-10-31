@@ -67,15 +67,10 @@
 
 ## Модель контента (что заполняется в CMS)
 
-**Проект** (коллекция `projects`, одна запись = оба языка):
-- `title`, `summary`, `problem`, `solution`, `result` — парные поля `{ en, ru }`
-- `category`: `ba` | `vibecoded`
-- `role`, `period` — короткие подписи (парные)
-- `tech` — список тегов (общий)
-- `links` — список `{ label, url }` (repo, live, прочее)
-- `cover` — обложка; `gallery` — список картинок
-- `video` — url (опционально)
-- `featured`, `order`, `draft` — управление показом
+**Проект** (коллекция `projects`, одна запись = оба языка; EN обязателен, пустой RU = фолбэк на EN, см. D11):
+- **Основное (всегда видно в форме):** `title` (EN, из него же URL) + `titleRu`; `category`: `ba` | `vibecoded`; `summary` — парное `{ en, ru }`; `cover`; `tech` — строка через запятую; `links` — список `{ label, url }`; `gallery`; `video` (опц.)
+- **Детали кейса (за галочкой, опционально):** `role`, `period`, `problem`, `solution`, `result` — парные; на странице показываются только заполненные
+- **Показ:** `featured`, `draft`, `order`
 
 **О себе** (singleton `about`): имя, хедлайн (парн.), био (парн., markdown), аватар, локация, языки, соцссылки (github/linkedin/email/telegram), файл резюме, текст CTA.
 

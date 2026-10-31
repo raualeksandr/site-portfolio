@@ -18,7 +18,7 @@
 | Иконки | `astro-icon` или инлайн-SVG | latest |
 | Шрифты | Fontsource, self-hosted (Inter + акцентный serif Lora) | latest |
 | Исходник | GitHub (репозиторий-источник, туда же коммитит Keystatic) | — |
-| Адаптер Astro | `@astrojs/node`, режим `standalone` — весь сайт по умолчанию prerendered-статика, SSR только на `/en/keystatic` и `/api/keystatic` (см. D10) | latest |
+| Адаптер Astro | `@astrojs/node`, режим `standalone` — весь сайт по умолчанию prerendered-статика, SSR только на `/keystatic` и `/api/keystatic` (см. D10) | latest |
 | Хостинг прода | **Amvera**, toolchain `Node.JS Server`: один Node-процесс (`node ./dist/server/entry.mjs`) раздаёт статику и обслуживает Keystatic-роуты (см. D9, D10; не `browser`-toolchain — его nginx не резолвит директории) | — |
 | Домен | нейтральный TLD `.com`/`.dev`, регистратор reg.ru (рубли) | — |
 | CDN | **нет** (никакого Cloudflare/иностранного CDN в проде) | — |
@@ -29,7 +29,7 @@
 
 ```
 portfolio/
-├─ astro.config.mjs          # интеграции: mdx, react; node-адаптер (D10); конфиг i18n
+├─ astro.config.mjs          # интеграции: mdx, react, keystatic; node-адаптер (D10); i18n `manual`
 ├─ keystatic.config.ts       # коллекция projects + singleton about; парные en/ru поля
 ├─ content.config.ts         # zod-схема коллекций (валидация фронтматтера)
 ├─ amvera.yaml               # конфиг сборки/деплоя Amvera (Node.JS Server, см. D9, D10)
@@ -46,11 +46,10 @@ portfolio/
 │  │  ├─ index.astro         # редирект на локаль по умолчанию
 │  │  ├─ en/index.astro
 │  │  ├─ en/projects/[slug].astro
-│  │  ├─ en/keystatic/[...params].astro   # админка, SSR (см. D10 — почему /en/, не /keystatic)
-│  │  ├─ en/keystatic/_keystatic-page.ts  # export const Keystatic = makePage(config)
 │  │  ├─ ru/index.astro
 │  │  ├─ ru/projects/[slug].astro
-│  │  └─ api/keystatic/[...params].ts     # GitHub OAuth + контент API, SSR, без префикса локали
+│  │  # /keystatic (админка) и /api/keystatic (OAuth + API) инжектит интеграция, SSR (D10)
+│  ├─ middleware.ts          # i18n-гейт «всегда с префиксом», кроме /keystatic (D10)
 │  ├─ i18n/                  # словари ui: en.json / ru.json + хелпер t()
 │  └─ styles/
 └─ ...
@@ -59,14 +58,14 @@ portfolio/
 ## Деплой-пайплайн (прод)
 
 - Исходник живёт в GitHub. Keystatic в GitHub-режиме (прод) коммитит контент туда же; локально (`npm run dev`) Keystatic работает в режиме `local` — пишет прямо в файлы, без GitHub App (см. D10).
-- Amvera привязан к GitHub-репозиторию (или получает `git push amvera master`) → собирает (`npm install && npm run build`) и запускает `node ./dist/server/entry.mjs` (Node.JS Server toolchain, см. D9, D10) — этот процесс сам раздаёт статику и обслуживает `/en/keystatic` + `/api/keystatic`.
-- Итог: правка в CMS (на деплойном `/en/keystatic` либо локально) → коммит в GitHub → пересборка на Amvera → обновлённый сайт. Зрители всегда ходят только на Amvera (RU-доступ без VPN); сам Alex для правки контента тоже ходит на Amvera (GitHub OAuth на `/en/keystatic`).
+- Amvera привязан к GitHub-репозиторию (или получает `git push amvera master`) → собирает (`npm install && npm run build`) и запускает `node ./dist/server/entry.mjs` (Node.JS Server toolchain, см. D9, D10) — этот процесс сам раздаёт статику и обслуживает `/keystatic` + `/api/keystatic`.
+- Итог: правка в CMS (на деплойном `/keystatic` либо локально) → коммит в GitHub → пересборка на Amvera → обновлённый сайт. Зрители всегда ходят только на Amvera (RU-доступ без VPN); сам Alex для правки контента тоже ходит на Amvera (GitHub OAuth на `/keystatic`).
 
 ## Запрещено в v1 (с триггером пересмотра)
 
 - **Западные хостинги и CDN в проде** (Vercel, Netlify, Cloudflare, GitHub Pages как основной прод) — из РФ заблокированы/нестабильны. Пересмотр, только если российская аудитория перестанет быть целевой.
 - **Cloudflare в любом виде** (в т.ч. как DNS-прокси) — рвёт TLS-хендшейк из РФ. Не пересматриваем, пока целимся в РФ.
-- **Кастомный сервер/бэкенд с бизнес-логикой** — пересмотр, если контактной форме понадобится логика сложнее Formspree. Исключения зафиксированы в D9 и D10: раздача `dist/` — просто отдача готовых статических файлов (без состояния), а SSR на `/en/keystatic`+`/api/keystatic` (D10) — это только GitHub OAuth-обмен токена и чтение/запись контент-файлов через GitHub API для редактора сайта (не для посетителей, без бизнес-логики, без БД). Весь публичный контент остаётся prerendered-статикой.
+- **Кастомный сервер/бэкенд с бизнес-логикой** — пересмотр, если контактной форме понадобится логика сложнее Formspree. Исключения зафиксированы в D9 и D10: раздача `dist/` — просто отдача готовых статических файлов (без состояния), а SSR на `/keystatic`+`/api/keystatic` (D10) — это только GitHub OAuth-обмен токена и чтение/запись контент-файлов через GitHub API для редактора сайта (не для посетителей, без бизнес-логики, без БД). Весь публичный контент остаётся prerendered-статикой.
 - **База данных** — пересмотр, если проектов станет > ~100 (не станет).
 - **React/Vue/Svelte** — только Astro-островки. Интерактив (переключатели языка/темы, фильтр) — минимальными островками. Пересмотр, если встраивается сложное интерактивное демо.
 - **Самостоятельный хостинг видео** — не пересматриваем: только YouTube/Vimeo embed.
@@ -103,8 +102,8 @@ portfolio/
 - **D7. Контент в формате проблема→решение→результат.** Использует BA-бэкграунд, отличает от типового dev-портфолио.
 - **D8. Стек почти за $0.** CMS и исходник бесплатны, платный только дешёвый рублёвый хостинг + домен — под личный сайт нормально.
 - **D9. Amvera: toolchain `Node.JS Server`, а не `browser` (nginx-статика).** При первом деплое на toolchain `browser` (nginx) обнаружилось: раздача matchит только точный путь к файлу, без резолва `директория → index.html`; любой несовпавший путь (включая `/en/`, `/ru/`) фолбэчил на корневой `index.html`, из-за чего клиентский редирект `/` → `/en/` зацикливался бесконечно. Перешли на `Node.JS Server` toolchain — изначально раздавали `dist/` через `sirv` (корректно резолвит индексы директорий и отдаёт настоящий 404), с D10 сборку раздаёт сам Node-адаптер Astro, `sirv` убран как избыточный. Сайт на момент этого решения остаётся полностью статическим (см. правило «Кастомный сервер/бэкенд» выше). *Альт:* сменить схему URL на плоские файлы без слэша (`/en.html`, `/ru.html`) и остаться на nginx-статике — отклонено, т.к. ломает договорённость D3 про симметричные `/en/`/`/ru/` без явного расширения в урле.
-- **D10. `@astrojs/node` (standalone), ради Keystatic GitHub-режима — и ручной монтаж роутов под `/en/keystatic`, а не автоинжект интеграции.** GitHub-режим Keystatic требует SSR (OAuth-обмен токена обязан идти на сервере, иначе придётся светить client secret в браузере), так что добавлен `@astrojs/node` в режиме `standalone`: в Astro 5+ `output: 'static'` + адаптер ведёт себя как старый `hybrid` — конкретные роуты с `prerender: false` рендерятся по запросу, весь остальной сайт как раньше prerendered в `dist/` на сборке. Один Node-процесс (`node ./dist/server/entry.mjs`, `containerPort: 8080`) и раздаёт статику, и обслуживает Keystatic — `sirv` больше не нужен, зависимость удалена.
-  При первой попытке подключить саму интеграцию `@keystatic/astro` (она автоматически инжектит `/keystatic` и `/api/keystatic`) обнаружился конфликт с D3: наш i18n-роутинг (`prefixDefaultLocale: true`, стратегия `pathname-prefix-always`) считает 404 любой непрефиксованный путь для роутов типа `"page"` — свой internal-роутер Astro проверяет это ПОСЛЕ рендера страницы (`finalizeI18n`), независимо от того, кто инжектировал роут. `/keystatic` (UI, тип `"page"`) попадал под эту проверку и всегда отдавал 404; `/api/keystatic` (тип `"endpoint"`) — нет, тип `"endpoint"` из этой проверки прямо исключён. Разобрано трассировкой через `app.match` → `handleRequest` → `finalizeI18n` → `I18nRouter.matchPrefixAlways`, не через документацию (баг/особенность на стыке Astro i18n + `@keystatic/astro`, нигде явно не описана).
-  Интеграция `@keystatic/astro` не даёт сконфигурировать свой захардкоженный путь `/keystatic`, поэтому решение — не использовать саму интеграцию (убрана из `integrations`), а смонтировать Keystatic вручную: `src/pages/en/keystatic/[...params].astro` (UI, под `/en/` — удовлетворяет i18n-роутер) и `src/pages/api/keystatic/[...params].ts` (API, без префикса — и так не подпадает под проверку). Обе страницы импортируют `makePage`/`makeHandler` из `@keystatic/astro/ui` и `@keystatic/astro/api` напрямую и читают `keystatic.config.ts` обычным relative-импортом вместо служебного `virtual:keystatic-config` (его резолвит только сама интеграция). `client:only="react"`-гидратации для статически непрослеживаемого выражения нужен реальный именованный экспорт — отсюда отдельный `_keystatic-page.ts` с `export const Keystatic = makePage(config)` (файл с `_` Astro не роутит).
-  *Почему не альтернативы:* чисто локальный Keystatic (`storage: 'local'`) убрал бы само требование SSR, но ломает FR-4 («редактирую с задеплоенного /keystatic»); Keystatic Cloud убрал бы SSR, но добавляет внешний сервис в цепочку и требует отдельной проверки доступности из РФ — отклонено ради одного деплоя и варианта «всё на своей инфре»; смена i18n-стратегии (`prefixDefaultLocale: false`) обошла бы конфликт, но меняет все EN-урлы и нарушает D3 — отклонено как непропорциональное решение узкой проблемы одной страницы.
-  *Почему это не нарушает «кастомный сервер/бэкенд с бизнес-логикой»:* SSR тут обслуживает только самого Alex как редактора (GitHub OAuth + чтение/запись через GitHub API), не посетителей сайта; публичный контент как и раньше — чистая prerendered-статика. Пересмотр, если Keystatic перестанет подходить как CMS, или если выйдет версия интеграции с настраиваемым путём админки.
+- **D10. `@astrojs/node` (standalone), ради Keystatic GitHub-режима; админка на родном `/keystatic` через i18n `routing: 'manual'` + свой middleware.** GitHub-режим Keystatic требует SSR (OAuth-обмен токена обязан идти на сервере, иначе придётся светить client secret в браузере), так что добавлен `@astrojs/node` в режиме `standalone`: в Astro 5+ `output: 'static'` + адаптер ведёт себя как старый `hybrid` — конкретные роуты с `prerender: false` рендерятся по запросу, весь остальной сайт как раньше prerendered в `dist/` на сборке. Один Node-процесс (`node ./dist/server/entry.mjs`, `containerPort: 8080`) и раздаёт статику, и обслуживает Keystatic — `sirv` больше не нужен, зависимость удалена.
+  Встроенный i18n-роутер Astro (`prefixDefaultLocale: true`, стратегия `pathname-prefix-always`) после рендера (`finalizeI18n` → `I18nRouter.matchPrefixAlways`) отдаёт 404 на любую непрефиксованную страницу типа `"page"`, в том числе на `/keystatic` из `@keystatic/astro` (тип `"endpoint"`, т.е. `/api/keystatic`, исключён). Первая попытка (день 6) — смонтировать админку вручную под `/en/keystatic` — оказалась нерабочей: путь `/keystatic` захардкожен в самом Keystatic — UI-роутер вычисляет экран через `pathname.replace(/^/keystatic/?/, "")`, внутренние переходы идут на `/keystatic/branch/…`, а OAuth-callback и logout в API редиректят на `/keystatic`. Обнаружено чтением `node_modules/@keystatic/core/dist` до первого прод-теста.
+  Решение: `i18n.routing: 'manual'` — при нём Astro не компилирует встроенный гейт вовсе (`i18nMemo` → `null`), а `src/middleware.ts` возвращает тот же гейт через `middleware({ prefixDefaultLocale: true })` из `astro:i18n` для всех путей, кроме `/keystatic*` и `/api/keystatic*`. URL сайта (D3) и поведение для посетителей не меняются; интеграция `@keystatic/astro` подключена штатно, ручной монтаж и `_keystatic-page.ts` удалены. Наши ссылки строятся своим хелпером `src/i18n`, хелперы `astro:i18n` не используются — на `manual` они не завязаны.
+  *Почему не альтернативы:* чисто локальный Keystatic (`storage: 'local'`) убрал бы само требование SSR, но ломает FR-4 («редактирую с задеплоенного /keystatic»); Keystatic Cloud убрал бы SSR, но добавляет внешний сервис в цепочку и требует отдельной проверки доступности из РФ; `prefixDefaultLocale: false` меняет все EN-урлы и нарушает D3; патч Keystatic (patch-package) ломается на каждом апдейте.
+  *Почему это не нарушает «кастомный сервер/бэкенд с бизнес-логикой»:* SSR тут обслуживает только самого Alex как редактора (GitHub OAuth + чтение/запись через GitHub API), не посетителей сайта; публичный контент как и раньше — чистая prerendered-статика. Пересмотр, если Keystatic перестанет подходить как CMS, или если Astro даст исключать пути из встроенного i18n-гейта без `manual`.

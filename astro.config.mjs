@@ -18,8 +18,7 @@ export default defineConfig({
   // static HTML at build time.
   adapter: node({ mode: 'standalone' }),
 
-  // TODO: replace with the real domain once bound
-  site: 'https://example.com',
+  site: 'https://aleksandrrau.com',
 
   integrations: [mdx(), react(), keystatic()],
 

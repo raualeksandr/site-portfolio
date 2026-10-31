@@ -20,6 +20,14 @@ export default defineConfig({
 
   site: 'https://aleksandrrau.com',
 
+  // Amvera terminates TLS at its proxy and talks plain http to us. Without
+  // this list Astro ignores Host/X-Forwarded-Proto and on-demand routes see
+  // http://localhost:8080 — Keystatic then sends GitHub that as its OAuth
+  // redirect_uri, which GitHub rejects.
+  security: {
+    allowedDomains: [{ hostname: 'aleksandrrau.com', protocol: 'https' }],
+  },
+
   integrations: [mdx(), react(), keystatic()],
 
   // D3 + D10: 'manual' turns off Astro's built-in locale gate, which
